@@ -30,14 +30,14 @@ BEGIN
     ('Gilberto e Márcia',           'CASAL',      100.00, false, NOW(), NOW()),
     ('Ciria e Juliel',              'CASAL',      100.00, false, NOW(), NOW()),
     ('Giovani (+1)',                'CASAL',      100.00, false, NOW(), NOW()),
-    ('Gelber e Gaby',               'CASAL',      100.00, false, NOW(), NOW()),
+    ('Gelber e Gaby',               'CASAL',      100.00, true,  NOW(), NOW()),
     ('Felipe e Ingrid',             'CASAL',      100.00, true,  NOW(), NOW()),
     ('Charles e Dayra',             'CASAL',      100.00, true,  NOW(), NOW()),
     ('Yuri e Sissi',                'CASAL',      100.00, true,  NOW(), NOW()),
     ('João Pedro e Thaís',          'CASAL',      100.00, true,  NOW(), NOW()),
     ('André e Fernanda',            'CASAL',      100.00, true,  NOW(), NOW()),
     ('Marta e Alcemir',             'CASAL',      100.00, false, NOW(), NOW()),
-    ('Francisco e Venina',          'CASAL',      100.00, false, NOW(), NOW()),
+    ('Francisco e Venina',          'CASAL',      100.00, true,  NOW(), NOW()),
     ('Jadel e Cíntia',              'CASAL',      100.00, true,  NOW(), NOW()),
     ('Leonardo e Karla',            'CASAL',      100.00, true,  NOW(), NOW()),
     ('Jander e Odemila',            'CASAL',      100.00, true,  NOW(), NOW()),
@@ -88,10 +88,44 @@ BEGIN
     ('Plácido e Rebecca',           'CASAL',      100.00, true,  NOW(), NOW()),
     ('Fátima Vasconcelos',          'INDIVIDUAL',  50.00, true,  NOW(), NOW()),
     ('Leno e Dalva',                'CASAL',      100.00, true,  NOW(), NOW()),
-    ('Aurisfran e Dorotéia',        'CASAL',      100.00, false, NOW(), NOW()),
-    ('Zé Maria e Nazaré',           'CASAL',      100.00, false, NOW(), NOW());
+    ('Aurisfran e Dorotéia',        'CASAL',      100.00, true,  NOW(), NOW()),
+    ('Zé Maria e Nazaré',           'CASAL',      100.00, true,  NOW(), NOW());
 
     INSERT INTO db_seeds (nome) VALUES ('seed_convidados_v1');
+
+  END IF;
+END $$;
+
+-- Corrige registros do v1 inseridos com pago=false incorretamente
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM db_seeds WHERE nome = 'seed_convidados_v1_fix') THEN
+
+    UPDATE reservas SET pago = true, atualizado_em = NOW()
+    WHERE LOWER(nome) IN (
+      'gelber e gaby',
+      'francisco e venina',
+      'aurisfran e dorotéia',
+      'zé maria e nazaré'
+    );
+
+    INSERT INTO db_seeds (nome) VALUES ('seed_convidados_v1_fix');
+
+  END IF;
+END $$;
+
+-- Novos convidados confirmados
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM db_seeds WHERE nome = 'seed_convidados_v2') THEN
+
+    INSERT INTO reservas (nome, tipo, valor, pago, criado_em, atualizado_em) VALUES
+    ('Denis e Julieta',  'CASAL', 100.00, true, NOW(), NOW()),
+    ('Arnold e Honata',  'CASAL', 100.00, true, NOW(), NOW()),
+    ('João e Danielle',  'CASAL', 100.00, true, NOW(), NOW()),
+    ('Márcio e Bruna',   'CASAL', 100.00, true, NOW(), NOW());
+
+    INSERT INTO db_seeds (nome) VALUES ('seed_convidados_v2');
 
   END IF;
 END $$;
