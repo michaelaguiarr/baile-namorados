@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Baile dos Namorados — Controle de Lista</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--rose:#c0475a;--rose-dark:#8c2e3e;--rose-light:#f7e8eb;--gold:#b8953a;--gold-light:#fdf6e3;--cream:#fdf9f5;--ink:#1e1a17;--ink-soft:#5a5047;--ink-muted:#9c9188;--border:#e8ddd4;--white:#fff;--green:#3a7d52;--green-bg:#eaf4ee;--green-border:#b0d9be;--blue:#2d5fa6;--blue-bg:#e8f0fb;--blue-border:#aac6ef;--radius:10px;--shadow:0 2px 16px rgba(30,26,23,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+/* header */
+.app-header{background:var(--rose-dark);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.app-header h1{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
+.app-header p{font-size:12px;opacity:.7;margin-top:2px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn-rel{background:var(--gold);color:#fff;border:none;padding:8px 16px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px}
+.btn-rel:hover{background:#9e7c2c}
+.btn-logout{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;text-decoration:none}
+.btn-logout:hover{background:rgba(255,255,255,.25)}
+/* stats */
+.stats-bar{background:#fff;border-bottom:1px solid var(--border);padding:.9rem 1.5rem;display:flex;gap:1.5rem;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat-val{font-size:22px;font-weight:600;font-family:'Playfair Display',serif;line-height:1}
+.stat-val.rose{color:var(--rose)}
+.stat-val.green{color:var(--green)}
+.stat-val.gold{color:var(--gold)}
+.stat-val.ink{color:var(--ink)}
+.stat-lbl{font-size:11px;color:var(--ink-muted)}
+/* alert */
+.flash{padding:10px 1.5rem;font-size:13px;background:var(--green-bg);color:var(--green);border-bottom:1px solid var(--green-border)}
+/* controls */
+.controls{padding:.8rem 1.5rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--cream)}
+.search-wrap{position:relative;flex:1;min-width:180px}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-muted);pointer-events:none}
+.search-input{width:100%;padding:8px 11px 8px 33px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;background:#fff;color:var(--ink);outline:none}
+.search-input:focus{border-color:var(--rose)}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:7px 13px;border-radius:99px;font-size:13px;font-weight:500;border:1px solid var(--border);background:#fff;color:var(--ink-soft);cursor:pointer;text-decoration:none;white-space:nowrap}
+.pill:hover,.pill.active{background:var(--rose);color:#fff;border-color:var(--rose)}
+.btn-add{background:var(--rose);color:#fff;border:none;padding:8px 16px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-add:hover{background:var(--rose-dark)}
+/* table */
+.table-wrap{padding:1.25rem 1.5rem;overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
+thead tr{background:var(--ink);color:#fff}
+thead th{padding:11px 13px;text-align:left;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#faf7f4}
+tbody tr.row-paid{background:var(--green-bg)}
+tbody tr.row-paid:hover{background:#d7eddd}
+td{padding:11px 13px;font-size:14px;color:var(--ink);vertical-align:middle}
+td.num{text-align:center;font-size:12px;color:var(--ink-muted);font-weight:500;width:44px}
+.td-name{font-weight:500}
+.tipo-badge{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500}
+.tipo-casal{background:#fce8eb;color:var(--rose-dark)}
+.tipo-ind{background:var(--gold-light);color:#7a5e1a}
+.status-pago{font-size:13px;font-weight:500;color:var(--green);white-space:nowrap}
+.status-pend{font-size:13px;font-weight:500;color:var(--rose);white-space:nowrap}
+.valor-cell{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+.btn-toggle-pago,.btn-toggle-pend{border:1px solid;border-radius:7px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.btn-toggle-pago{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.btn-toggle-pago:hover{background:#c5e8d0}
+.btn-toggle-pend{background:var(--rose-light);color:var(--rose-dark);border-color:#f0bcc4}
+.btn-toggle-pend:hover{background:#f3cdd3}
+.btn-edit{border:1px solid var(--border);background:#fff;cursor:pointer;border-radius:7px;padding:5px 9px;font-size:13px;color:var(--ink-soft);margin-right:4px;transition:all .13s}
+.btn-edit:hover{border-color:var(--gold);color:var(--gold)}
+.btn-del{border:1px solid var(--border);background:#fff;cursor:pointer;border-radius:7px;padding:5px 9px;font-size:13px;color:var(--ink-soft);transition:all .13s}
+.btn-del:hover{border-color:var(--rose);color:var(--rose)}
+.empty{text-align:center;padding:2.5rem;color:var(--ink-muted);font-size:14px}
+/* legend */
+.legend{display:flex;gap:14px;padding:.4rem 1.5rem .8rem;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-muted)}
+.leg-dot{width:10px;height:10px;border-radius:3px}
+/* modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(30,26,23,.45);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:2rem;width:100%;max-width:420px;margin:1rem;box-shadow:0 8px 48px rgba(30,26,23,.18)}
+.modal h2{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:1.5rem;color:var(--ink)}
+.field{margin-bottom:1.2rem}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--ink-soft);margin-bottom:5px}
+.field input[type=text],.field select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;background:#fff}
+.field input:focus,.field select:focus{border-color:var(--rose)}
+.radio-group{display:flex;gap:1rem}
+.radio-group label{display:flex;align-items:center;gap:7px;font-size:14px;cursor:pointer;color:var(--ink)}
+.radio-group input[type=radio]{accent-color:var(--rose);width:16px;height:16px;cursor:pointer}
+.chk-row{display:flex;align-items:center;gap:8px;margin-top:3px}
+.chk-row input[type=checkbox]{accent-color:var(--rose);width:17px;height:17px;cursor:pointer}
+.chk-row label{font-size:14px;color:var(--ink);cursor:pointer}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:1.75rem}
+.btn-cancel{padding:10px 18px;border:1px solid var(--border);background:#fff;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--ink-soft)}
+.btn-cancel:hover{border-color:var(--rose)}
+.btn-save{padding:10px 22px;background:var(--rose);color:#fff;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer}
+.btn-save:hover{background:var(--rose-dark)}
+.err-msg{color:var(--rose);font-size:12px;margin-top:4px}
+.chk-cell{text-align:center;width:50px}
+.chk-pago{accent-color:var(--green);width:17px;height:17px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <h1>🌹 Baile dos Namorados</h1>
+    <p>Igreja Nossa Senhora do Perpétuo Socorro</p>
+  </div>
+  <div class="header-actions">
+    <a href="/relatorio/financeiro" class="btn-rel">💰 Financeiro</a>
+    <a href="/relatorio/entrada" class="btn-rel">📋 Entrada</a>
+    <form th:action="@{/logout}" method="post" style="display:inline">
+      <button type="submit" class="btn-logout">Sair</button>
+    </form>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats-bar" th:if="${resumo}">
+  <div class="stat"><div class="stat-val ink" th:text="${resumo.totalReservas}">0</div><div class="stat-lbl">Total</div></div>
+  <div class="stat"><div class="stat-val green" th:text="${resumo.totalPagos}">0</div><div class="stat-lbl">Pagos</div></div>
+  <div class="stat"><div class="stat-val rose" th:text="${resumo.totalPendentes}">0</div><div class="stat-lbl">Pendentes</div></div>
+  <div class="stat"><div class="stat-val gold" th:text="${'R$ ' + #numbers.formatDecimal(resumo.totalArrecadado, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div><div class="stat-lbl">Arrecadado</div></div>
+  <div class="stat"><div class="stat-val ink" th:text="${'R$ ' + #numbers.formatDecimal(resumo.totalPrevisto, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div><div class="stat-lbl">Previsto total</div></div>
+</div>
+
+<!-- Flash -->
+<div class="flash" th:if="${sucesso}" th:text="'✅ ' + ${sucesso}"></div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <form th:action="@{/}" method="get" style="display:contents">
+      <input class="search-input" type="text" name="busca" th:value="${busca}" placeholder="Buscar por nome..."/>
+    </form>
+  </div>
+  <div class="pills">
+    <a class="pill" th:classappend="${filtro == null and busca == null} ? 'active'" href="/">Todos</a>
+    <a class="pill" th:classappend="${filtro == 'pagos'} ? 'active'" href="/?filtro=pagos">Pagos</a>
+    <a class="pill" th:classappend="${filtro == 'pendentes'} ? 'active'" href="/?filtro=pendentes">Pendentes</a>
+  </div>
+  <button class="btn-add" onclick="abrirModal()">＋ Adicionar</button>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:var(--green-bg);border:1px solid var(--green-border)"></div>Pago</div>
+  <div class="leg"><div class="leg-dot" style="background:#fff;border:1px solid var(--border)"></div>Pendente</div>
+</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nome</th>
+        <th>Tipo</th>
+        <th>Valor</th>
+        <th style="text-align:center">Pago</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:if="${#lists.isEmpty(reservas)}">
+        <td colspan="6"><div class="empty">Nenhuma reserva encontrada.</div></td>
+      </tr>
+      <tr th:each="r, i : ${reservas}" th:classappend="${r.pago} ? 'row-paid'">
+        <td class="num" th:text="${i.count}">1</td>
+        <td class="td-name" th:text="${r.nome}">Nome</td>
+        <td>
+          <span th:if="${r.tipo.name() == 'CASAL'}" class="tipo-badge tipo-casal">Casal</span>
+          <span th:if="${r.tipo.name() == 'INDIVIDUAL'}" class="tipo-badge tipo-ind">Individual</span>
+        </td>
+        <td class="valor-cell" th:text="${'R$ ' + #numbers.formatDecimal(r.valor, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+        <td class="chk-cell">
+          <form th:id="'form-toggle-' + ${r.id}"
+                th:action="@{/reservas/{id}/toggle-pagamento(id=${r.id})}"
+                method="post">
+            <input type="hidden" name="referer" th:value="${'/' + currentQuery}"/>
+            <input type="checkbox" class="chk-pago"
+                   th:checked="${r.pago}"
+                   onchange="this.closest('form').submit()"/>
+          </form>
+        </td>
+        <td style="white-space:nowrap">
+          <!-- editar -->
+          <button class="btn-edit"
+                  th:data-id="${r.id}"
+                  th:data-nome="${r.nome}"
+                  th:data-tipo="${r.tipo}"
+                  th:data-pago="${r.pago}"
+                  onclick="abrirModalEdicao(this)"
+                  title="Editar">✏️</button>
+          <!-- excluir -->
+          <form th:action="@{/reservas/{id}/excluir(id=${r.id})}" method="post" style="display:inline"
+                onsubmit="return confirm('Remover esta reserva?')">
+            <button type="submit" class="btn-del" title="Excluir">🗑️</button>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL: Editar reserva -->
+<div class="modal-overlay" id="modal-edicao" onclick="fecharModalEdicaoFora(event)">
+  <div class="modal">
+    <h2>Editar reserva</h2>
+    <form th:action="@{/reservas/salvar}" method="post">
+      <input type="hidden" id="edit-id" name="id" th:value="${form.id}"/>
+
+      <div class="field">
+        <label for="edit-nome">Nome do casal / pessoa *</label>
+        <input type="text" id="edit-nome" name="nome" placeholder="Ex: João e Maria" required
+               th:value="${form.id != null ? form.nome : ''}"/>
+        <div class="err-msg" th:if="${errNome != null}" th:text="${errNome}"></div>
+      </div>
+
+      <div class="field">
+        <label>Tipo *</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="tipo" value="CASAL"
+                   th:checked="${form.id != null and form.tipo != null and form.tipo.name() == 'CASAL'}"/>
+            Casal — R$ 100,00
+          </label>
+          <label>
+            <input type="radio" name="tipo" value="INDIVIDUAL"
+                   th:checked="${form.id != null and form.tipo != null and form.tipo.name() == 'INDIVIDUAL'}"/>
+            Individual — R$ 50,00
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="chk-row">
+          <input type="checkbox" id="edit-pago" name="pago" value="true"
+                 th:checked="${form.id != null and form.pago}"/>
+          <label for="edit-pago">Já realizou o pagamento</label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="fecharModalEdicao()">Cancelar</button>
+        <button type="submit" class="btn-save">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Adicionar / Editar -->
+<div class="modal-overlay" id="modal" onclick="fecharModalFora(event)">
+  <div class="modal">
+    <h2 th:text="${form.id != null} ? 'Editar reserva' : 'Nova reserva'">Nova reserva</h2>
+    <form th:action="@{/reservas/salvar}" method="post" th:object="${form}">
+      <input type="hidden" th:field="*{id}"/>
+
+      <div class="field">
+        <label for="nome">Nome do casal / pessoa *</label>
+        <input type="text" id="nome" th:field="*{nome}" placeholder="Ex: João e Maria" autofocus/>
+        <div class="err-msg" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></div>
+      </div>
+
+      <div class="field">
+        <label>Tipo *</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" th:field="*{tipo}" value="CASAL"/>
+            Casal — R$ 100,00
+          </label>
+          <label>
+            <input type="radio" th:field="*{tipo}" value="INDIVIDUAL"/>
+            Individual — R$ 50,00
+          </label>
+        </div>
+        <div class="err-msg" th:if="${#fields.hasErrors('tipo')}" th:errors="*{tipo}"></div>
+      </div>
+
+      <div class="field">
+        <div class="chk-row">
+          <input type="checkbox" id="pago" th:field="*{pago}"/>
+          <label for="pago">Já realizou o pagamento</label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn-save">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script th:inline="javascript">
+const modalEl = document.getElementById('modal');
+function abrirModal(){ modalEl.classList.add('open'); document.getElementById('nome').focus(); }
+function fecharModal(){ modalEl.classList.remove('open'); }
+function fecharModalFora(e){ if(e.target===modalEl) fecharModal(); }
+
+const modalEdicaoEl = document.getElementById('modal-edicao');
+function fecharModalEdicao(){ modalEdicaoEl.classList.remove('open'); }
+function fecharModalEdicaoFora(e){ if(e.target===modalEdicaoEl) fecharModalEdicao(); }
+function abrirModalEdicao(btn){
+  document.getElementById('edit-id').value = btn.dataset.id;
+  document.getElementById('edit-nome').value = btn.dataset.nome;
+  document.getElementById('edit-pago').checked = btn.dataset.pago === 'true';
+  document.querySelectorAll('#modal-edicao input[name="tipo"]').forEach(r => {
+    r.checked = r.value === btn.dataset.tipo;
+  });
+  modalEdicaoEl.classList.add('open');
+  document.getElementById('edit-nome').focus();
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){ fecharModal(); fecharModalEdicao(); }
+});
+
+// Reabre modal após erro de servidor
+const modalAberto = /*[[${modalAberto}]]*/ false;
+if(modalAberto) modalEl.classList.add('open');
+
+const modalEdicaoAberto = /*[[${modalEdicaoAberto}]]*/ false;
+if(modalEdicaoAberto) modalEdicaoEl.classList.add('open');
+
+// Busca ao pressionar enter
+document.querySelector('.search-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') e.target.closest('form').submit();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Relatório — Baile dos Namorados</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--rose:#c0475a;--rose-dark:#8c2e3e;--gold:#b8953a;--cream:#fdf9f5;--ink:#1e1a17;--ink-soft:#5a5047;--ink-muted:#9c9188;--border:#e8ddd4;--green:#3a7d52;--green-bg:#eaf4ee;--green-border:#b0d9be;--radius:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+/* screen only */
+.screen-bar{background:var(--rose-dark);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.screen-bar h1{font-family:'Playfair Display',serif;font-size:18px;font-weight:700}
+.screen-actions{display:flex;gap:8px}
+.btn-print{background:var(--gold);color:#fff;border:none;padding:8px 16px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer}
+.btn-back{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;text-decoration:none}
+.content{max-width:960px;margin:0 auto;padding:1.5rem}
+/* print header */
+.print-header{text-align:center;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid var(--rose-dark)}
+.print-header h1{font-family:'Playfair Display',serif;font-size:26px;color:var(--rose-dark)}
+.print-header p{font-size:14px;color:var(--ink-soft);margin-top:5px}
+.print-date{font-size:12px;color:var(--ink-muted);margin-top:8px}
+/* summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:2rem}
+.sum-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center}
+.sum-val{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;line-height:1}
+.sum-val.green{color:var(--green)}
+.sum-val.rose{color:var(--rose)}
+.sum-val.gold{color:var(--gold)}
+.sum-val.ink{color:var(--ink)}
+.sum-lbl{font-size:12px;color:var(--ink-muted);margin-top:4px}
+/* section */
+.section-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--ink);margin:1.5rem 0 .75rem;padding-bottom:6px;border-bottom:1px solid var(--border)}
+/* table */
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:2rem;font-size:13px}
+thead tr{background:var(--ink);color:#fff}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+tbody tr.row-paid{background:var(--green-bg)}
+td{padding:9px 12px;vertical-align:middle}
+td.num{text-align:center;width:38px;font-size:12px;color:var(--ink-muted)}
+.tipo-badge{font-size:11px;padding:2px 7px;border-radius:99px;font-weight:500}
+.tipo-casal{background:#fce8eb;color:var(--rose-dark)}
+.tipo-ind{background:#fdf6e3;color:#7a5e1a}
+.status-pago{color:var(--green);font-weight:500}
+.status-pend{color:var(--rose);font-weight:500}
+.valor-num{font-variant-numeric:tabular-nums;font-weight:500}
+/* footer */
+.report-footer{text-align:center;font-size:11px;color:var(--ink-muted);margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+/* confirm list */
+.confirm-table tbody tr td:last-child{width:80px;text-align:center}
+.check-box{display:inline-block;width:20px;height:20px;border:1.5px solid #888;border-radius:4px;vertical-align:middle}
+
+@media print{
+  .screen-bar{display:none}
+  body{background:#fff}
+  .content{padding:.5rem}
+  table{font-size:11px}
+  thead tr{background:#8c2e3e!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  tbody tr.row-paid{background:#eaf4ee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sum-card{border:1px solid #ccc}
+  .btn-print,.btn-back{display:none}
+  .section-title{font-size:15px}
+  h1{font-size:22px!important}
+  .check-box{border:1.5px solid #555}
+}
+</style>
+</head>
+<body>
+
+<div class="screen-bar">
+  <h1>📊 Relatório — Baile dos Namorados</h1>
+  <div class="screen-actions">
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+    <a href="/" class="btn-back">← Voltar</a>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- Cabeçalho de impressão -->
+  <div class="print-header">
+    <h1>🌹 Baile dos Namorados</h1>
+    <p>Igreja Nossa Senhora do Perpétuo Socorro</p>
+    <div class="print-date">
+      Relatório gerado em
+      <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">01/01/2025</span>
+      às
+      <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm')}">00:00</span>
+    </div>
+  </div>
+
+  <!-- Cards de resumo -->
+  <div class="summary-grid">
+    <div class="sum-card">
+      <div class="sum-val ink" th:text="${resumo.totalReservas}">0</div>
+      <div class="sum-lbl">Total de reservas</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val green" th:text="${resumo.totalPagos}">0</div>
+      <div class="sum-lbl">Pagamentos confirmados</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val rose" th:text="${resumo.totalPendentes}">0</div>
+      <div class="sum-lbl">Pagamentos pendentes</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val ink" th:text="${resumo.totalCasais}">0</div>
+      <div class="sum-lbl">Casais (R$ 100)</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val ink" th:text="${resumo.totalIndividuais}">0</div>
+      <div class="sum-lbl">Individuais (R$ 50)</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val green" th:text="${'R$ ' + #numbers.formatDecimal(resumo.totalArrecadado, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div>
+      <div class="sum-lbl">Total arrecadado</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val gold" th:text="${'R$ ' + #numbers.formatDecimal(resumo.totalPrevisto, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div>
+      <div class="sum-lbl">Previsto total</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val rose" th:text="${'R$ ' + #numbers.formatDecimal(resumo.totalPendentePagamento, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</div>
+      <div class="sum-lbl">A receber</div>
+    </div>
+  </div>
+
+  <!-- Lista de confirmação na entrada (todos) -->
+  <div class="section-title">📋 Lista de confirmação — Entrada do evento</div>
+  <table class="confirm-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nome</th>
+        <th>Tipo</th>
+        <th>Valor</th>
+        <th>Status</th>
+        <th style="text-align:center">✓ Confirmado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="r, i : ${reservas}" th:classappend="${r.pago} ? 'row-paid'">
+        <td class="num" th:text="${i.count}">1</td>
+        <td style="font-weight:500" th:text="${r.nome}">Nome</td>
+        <td>
+          <span th:if="${r.tipo.name() == 'CASAL'}" class="tipo-badge tipo-casal">Casal</span>
+          <span th:if="${r.tipo.name() == 'INDIVIDUAL'}" class="tipo-badge tipo-ind">Individual</span>
+        </td>
+        <td class="valor-num" th:text="${'R$ ' + #numbers.formatDecimal(r.valor, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+        <td>
+          <span th:if="${r.pago}" class="status-pago">✅ Pago</span>
+          <span th:unless="${r.pago}" class="status-pend">⏳ Pendente</span>
+        </td>
+        <td style="text-align:center"><span class="check-box"></span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pagos -->
+  <div class="section-title">✅ Pagamentos confirmados (<span th:text="${resumo.totalPagos}">0</span>)</div>
+  <table>
+    <thead><tr><th>#</th><th>Nome</th><th>Tipo</th><th>Valor pago</th><th>Data pagamento</th></tr></thead>
+    <tbody>
+      <tr th:if="${#lists.isEmpty(pagos)}">
+        <td colspan="5" style="text-align:center;padding:1rem;color:#9c9188">Nenhum pagamento registrado.</td>
+      </tr>
+      <tr class="row-paid" th:each="r, i : ${pagos}">
+        <td class="num" th:text="${i.count}">1</td>
+        <td style="font-weight:500" th:text="${r.nome}">Nome</td>
+        <td>
+          <span th:if="${r.tipo.name() == 'CASAL'}" class="tipo-badge tipo-casal">Casal</span>
+          <span th:if="${r.tipo.name() == 'INDIVIDUAL'}" class="tipo-badge tipo-ind">Individual</span>
+        </td>
+        <td class="valor-num" th:text="${'R$ ' + #numbers.formatDecimal(r.valor, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+        <td style="font-size:12px;color:#5a5047"
+            th:text="${r.dataPagamento != null ? #temporals.format(r.dataPagamento, 'dd/MM/yyyy HH:mm') : '—'}">—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Pendentes -->
+  <div class="section-title">⏳ Pagamentos pendentes (<span th:text="${resumo.totalPendentes}">0</span>)</div>
+  <table>
+    <thead><tr><th>#</th><th>Nome</th><th>Tipo</th><th>Valor a pagar</th></tr></thead>
+    <tbody>
+      <tr th:if="${#lists.isEmpty(pendentes)}">
+        <td colspan="4" style="text-align:center;padding:1rem;color:#9c9188">Todos já pagaram! 🎉</td>
+      </tr>
+      <tr th:each="r, i : ${pendentes}">
+        <td class="num" th:text="${i.count}">1</td>
+        <td style="font-weight:500" th:text="${r.nome}">Nome</td>
+        <td>
+          <span th:if="${r.tipo.name() == 'CASAL'}" class="tipo-badge tipo-casal">Casal</span>
+          <span th:if="${r.tipo.name() == 'INDIVIDUAL'}" class="tipo-badge tipo-ind">Individual</span>
+        </td>
+        <td class="valor-num" th:text="${'R$ ' + #numbers.formatDecimal(r.valor, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="report-footer">
+    Baile dos Namorados — Igreja Nossa Senhora do Perpétuo Socorro
+    &nbsp;|&nbsp;
+    Total arrecadado: <strong th:text="${'R$ ' + #numbers.formatDecimal(resumo.totalArrecadado, 1, 'POINT', 2, 'COMMA')}">R$ 0,00</strong>
+    &nbsp;|&nbsp;
+    <span th:text="${resumo.totalReservas}">0</span> reservas
+  </div>
+
+</div>
+</body>
+</html>

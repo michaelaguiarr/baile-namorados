@@ -1,0 +1,10 @@
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/repository/ReservaRepository.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/service/ReservaService.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/model/Reserva.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/BaileNamoradosApplication.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/security/SecurityConfig.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/dto/ResumoDTO.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/exception/NomeDuplicadoException.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/dto/ReservaForm.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/controller/ReservaController.java
+/Users/michaelaguiar/Developer/freelancer/baile-namorados/src/main/java/com/igreja/baile/controller/LoginController.java

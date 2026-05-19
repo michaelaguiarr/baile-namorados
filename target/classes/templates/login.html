@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Entrar — Baile dos Namorados</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#fdf9f5;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;border-radius:16px;border:1px solid #e8ddd4;box-shadow:0 4px 32px rgba(30,26,23,.08);padding:2.5rem 2rem;width:100%;max-width:380px;margin:1rem}
+.rose{color:#8c2e3e}
+.logo{text-align:center;margin-bottom:2rem}
+.logo h1{font-family:'Playfair Display',serif;font-size:24px;color:#8c2e3e}
+.logo p{font-size:13px;color:#9c9188;margin-top:4px}
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:13px;font-weight:500;color:#5a5047;margin-bottom:6px}
+.field input{width:100%;padding:11px 13px;border:1px solid #e8ddd4;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1e1a17;outline:none;transition:border-color .15s}
+.field input:focus{border-color:#c0475a}
+.btn{width:100%;padding:12px;background:#8c2e3e;color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:.5rem}
+.btn:hover{background:#7a2533}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:1.25rem}
+.alert-err{background:#fce8eb;color:#8c2e3e;border:1px solid #f0bcc4}
+.alert-ok{background:#eaf4ee;color:#3a7d52;border:1px solid #b0d9be}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div style="font-size:36px;margin-bottom:.5rem">🌹</div>
+    <h1>Baile dos Namorados</h1>
+    <p>Igreja Nossa Senhora do Perpétuo Socorro</p>
+  </div>
+
+  <div th:if="${erro}" class="alert alert-err" th:text="${erro}"></div>
+  <div th:if="${saiu}" class="alert alert-ok" th:text="${saiu}"></div>
+
+  <form th:action="@{/login}" method="post">
+    <div class="field">
+      <label for="username">Usuário</label>
+      <input type="text" id="username" name="username" autocomplete="username" required autofocus/>
+    </div>
+    <div class="field">
+      <label for="password">Senha</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required/>
+    </div>
+    <button type="submit" class="btn">Entrar</button>
+  </form>
+</div>
+</body>
+</html>

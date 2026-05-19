@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: baile-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: baile_namorados
+      POSTGRES_USER: baile
+      POSTGRES_PASSWORD: ${DB_PASS:-baile123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/db/seed.sql:/docker-entrypoint-initdb.d/01_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baile -d baile_namorados"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: baile-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/baile_namorados
+      DB_USER: baile
+      DB_PASS: ${DB_PASS:-baile123}
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASS: ${ADMIN_PASS:-baile@2025}
+      PORT: 8080
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  postgres_data:
