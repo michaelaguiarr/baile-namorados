@@ -107,8 +107,8 @@ td.num{text-align:center;font-size:12px;color:var(--ink-muted);font-weight:500;w
     <p>Igreja Nossa Senhora do Perpétuo Socorro</p>
   </div>
   <div class="header-actions">
-    <a href="/relatorio/financeiro" class="btn-rel">💰 Financeiro</a>
-    <a href="/relatorio/entrada" class="btn-rel">📋 Entrada</a>
+    <a th:href="@{/relatorio/financeiro}" class="btn-rel">💰 Financeiro</a>
+    <a th:href="@{/relatorio/entrada}" class="btn-rel">📋 Entrada</a>
     <form th:action="@{/logout}" method="post" style="display:inline">
       <button type="submit" class="btn-logout">Sair</button>
     </form>
@@ -136,9 +136,9 @@ td.num{text-align:center;font-size:12px;color:var(--ink-muted);font-weight:500;w
     </form>
   </div>
   <div class="pills">
-    <a class="pill" th:classappend="${filtro == null and busca == null} ? 'active'" href="/">Todos</a>
-    <a class="pill" th:classappend="${filtro == 'pagos'} ? 'active'" href="/?filtro=pagos">Pagos</a>
-    <a class="pill" th:classappend="${filtro == 'pendentes'} ? 'active'" href="/?filtro=pendentes">Pendentes</a>
+    <a class="pill" th:classappend="${filtro == null and busca == null} ? 'active'" th:href="@{/}">Todos</a>
+    <a class="pill" th:classappend="${filtro == 'pagos'} ? 'active'" th:href="@{/(filtro=pagos)}">Pagos</a>
+    <a class="pill" th:classappend="${filtro == 'pendentes'} ? 'active'" th:href="@{/(filtro=pendentes)}">Pendentes</a>
   </div>
   <button class="btn-add" onclick="abrirModal()">＋ Adicionar</button>
 </div>

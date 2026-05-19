@@ -297,6 +297,27 @@ Vantagem: sem round-trip ao servidor para abrir o formulário de edição.
 
 Atenção ao escopo do `querySelectorAll` dos radio buttons — usar `#modal-edicao input[name="tipo"]` para não afetar o modal de criação que tem radio buttons com o mesmo `name`.
 
+### Context path — links devem usar `th:href="@{/...}"` e `th:action="@{/...}"`
+
+A aplicação usa `server.servlet.context-path=/baile` em produção. O Thymeleaf prefixa o context path automaticamente **apenas** nas expressões `@{}`. Links e actions com `href=` ou `action=` hardcoded **não** recebem o prefixo e quebram em produção.
+
+```html
+<!-- ERRADO — não funciona com context path: -->
+<a href="/relatorio/financeiro">
+<form action="/reservas/salvar">
+
+<!-- CORRETO — Thymeleaf prepend /baile automaticamente: -->
+<a th:href="@{/relatorio/financeiro}">
+<form th:action="@{/reservas/salvar}">
+```
+
+Query parameters nos pills de filtro usam a sintaxe `@{/(param=valor)}`:
+```html
+<a th:href="@{/(filtro=pagos)}">   <!-- produz /baile/?filtro=pagos -->
+```
+
+O profile `dev` sobrescreve com `server.servlet.context-path=/` para rodar sem prefixo localmente.
+
 ### 403 Forbidden em POST — token CSRF ausente
 
 O Spring Security exige token CSRF em todo POST. O Thymeleaf injeta o token automaticamente **apenas** quando o atributo do form é `th:action` (com prefixo `th:`). Usar `action=` sem o prefixo não injeta o token e resulta em 403 Forbidden silencioso.
