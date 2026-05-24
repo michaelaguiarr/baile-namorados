@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Definir SHA curto
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Deploy na VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -22,3 +25,27 @@ jobs:
             cd /opt/docker/baile-namorados
             git pull
             docker compose up -d --build
+
+      - name: Notificar Telegram — sucesso
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ✅ Baile dos Namorados — deploy concluído
+            Branch: main
+            Commit: ${{ env.SHORT_SHA }}
+            Por: ${{ github.event.head_commit.author.name }}
+
+      - name: Notificar Telegram — falha
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ❌ Baile dos Namorados — deploy falhou
+            Branch: main
+            Commit: ${{ env.SHORT_SHA }}
+            Por: ${{ github.event.head_commit.author.name }}
